@@ -1,0 +1,234 @@
+﻿No.,,項目名,,,属性名,,主キー,型,,,桁数,,nul,unq,idx,def,項目種,備考
+1,,apart_id,,,住宅システムID,,○,serial,,,4,,○,○,,,,
+2,,apart_code,,,住宅登録番号,,,character varying,,,20,,,,,,,
+3,,user_id,,,登録ユーザID,,,integer,,,4,,,,,,,
+4,,status_apply,,,申請ステータス,,,smallint,,,2,,,,○,0,,"0=申請書作成中
+1=修正申請書作成中
+2=申請書作成中(差戻し)
+4=地方公共団体による修正中（公開済み修正も含む） 
+6=審査中
+8=一時的非公開
+10=公開中
+-9=登録抹消"
+5,,status_input,,,入力ステータス,,,character varying,,,20,,,,,"'00000000000
+0'",,"桁毎に申請項目に対応し、 0=未入力、1=未確認、2=仮保存 3=データ引用後仮保存
+※2018年1月リリース追記左1桁=名称・所在地
+左2桁=事業者左3桁=事務所
+左4桁=戸数・規模左5桁=入居契約
+左6桁=支援サービス左7桁=管理
+左8桁=併設施設（任意） 左9桁=提携事業者（任意）左10桁=役員名簿 (任意)左11桁=専有部
+左12桁=共同利用設備 (任意)
+左13桁=支援サービス詳細 左14桁=法定代理人役員名簿左15桁=住宅の画像  ※2017年9月リリースで削除
+左15桁=保健医療サービスを提供する体制に関する事項 (任意)
+左16桁=運営の方針
+※15桁～16桁は令和4年様式"
+6,,apart_name_kana,,,住宅の名称（ふりがな）,,,character varying,,,150,,,,,,様式1,
+7,,apart_name,,,住宅の名称（漢字）,,,character varying,,,60,,,,,,様式1,
+8,,apart_zip,,,所在地－郵便番号,,,character varying,,,7,,,,,,様式1,
+9,,apart_pref,,,所在地－都道府県,,,smallint,,,2,,,,,,様式1,
+10,,apart_city,,,所在地－市区町村,,,character varying,,,5,,,,○,,様式1,
+11,,apart_town,,,所在地－町名,,,character varying,,,80,,,,,,様式1,一般公開部分
+12,,apart_street,,,所在地－所番地,,,character varying,,,80,,,,,,様式1,一般非公開部分
+13,,access_line,,,利用交通手段（電車：線名）,,,character varying,,,60,,,,,,様式1,
+14,,access_station,,,利用交通手段（電車：駅名）,,,character varying,,,60,,,,,,様式1,
+15,,access_bus,,,駅からのバス利用,,,smallint,,,2,,,,,,様式1,1=利用
+16,,access_bus_minute,,,駅からのバス時間,,,smallint,,,2,,,,,,様式1,
+17,,access_bus_foot_minute,,,バス降車後の時間,,,smallint,,,2,,,,,,様式1,
+18,,access_foot,,,駅からの徒歩利用,,,smallint,,,2,,,,,,様式1,1=利用
+19,,access_foot_minute,,,駅からの徒歩時間,,,smallint,,,2,,,,,,様式1,
+20,,access_other,,,利用交通手段（その他）,,,character varying,,,150,,,,,,様式1,
+21,,house_right,,,住宅権原,,,smallint,,,2,,,,,,様式1,"1=所有権
+3=賃借権
+4=使用賃借による権利"
+22,,house_right_from,,,住宅権原－期間開始,,,date,,,8,,,,,,様式1,
+23,,house_right_to,,,住宅権原－期間終了,,,date,,,8,,,,,,様式1,
+24,,facility_right,,,施設権原,,,smallint,,,2,,,,,,様式1,"0=該当しない
+1=所有権
+3=賃借権
+4=使用賃借による権利"
+25,,facility_right_from,,,施設権原－期間開始,,,date,,,8,,,,,,様式1,
+26,,facility_right_to,,,施設権原－期間終了,,,date,,,8,,,,,,様式1,
+27,,site_right,,,敷地権原,,,smallint,,,2,,,,,,様式1,"1=所有権
+2=地上権
+3=賃借権
+4=使用賃借による権利"
+28,,site_right_from,,,敷地権原－期間開始,,,date,,,8,,,,,,様式1,
+29,,site_right_to,,,敷地権原－期間終了,,,date,,,8,,,,,,様式1,
+30,,room_number,,,住宅戸数,,,smallint,,,2,,,,,,様式4,
+31,,area_min,,,規模（最小）,,,"numeric(5,2)",,,12,,,,,,様式4,
+32,,area_max,,,規模（最大）,,,"numeric(5,2)",,,12,,,,,,様式4,
+33,,share_equipment,,,共同利用設備,,,smallint,,,2,,,,,,様式4,0=なし、1=あり
+34,,structure,,,構造,,,character varying,,,30,,,,,,様式4,
+35,,completion_date,,,竣工の年月,,,smallint,,,8,,,,,,様式4,
+36,,structure_for_aging,,,加齢対応構造等,,,smallint,,,2,,,,,,様式4,"1=登録基準に適合している
+2=エレベーターを備えている
+4=緊急通報装置を備えている"
+37,,contract_type,,,入居契約の別,,,smallint,,,2,,,,,,様式5,1=賃貸借契約、2=その他
+38,,syuushin,,,終身賃貸事業者の事業の認可,,,smallint,,,2,,,,,,様式5,"0=未許可
+1=法第52条の認可を受けている"
+39,,tenant_qualification,,,入居者の資格,,,smallint,,,2,,,,,,様式5,0=非該当、1=該当
+40,,before_supply,,,入居の用に供する前である,,,smallint,,,2,,,,,,様式5,1=はい、0=いいえ
+41,,consult_offer_type,,,状況把握／生活相談（提供形態）,,,smallint,,,2,,,,,,様式6,1=自ら、2=委託、3=併用
+42,,consult_fee,,,状況把握／生活相談（対価）,,,integer,,,4,,,,,,様式6,
+43,,food_offer_type,,,食事の提供（提供形態）,,,smallint,,,2,,,,,,様式6,"1=自ら、2=委託、3=併用、
+4=提供しない"
+44,,food_fee,,,食事の提供（対価）,,,integer,,,4,,,,,,様式6,
+45,,bath_offer_type,,,入浴等の介護（提供形態）,,,smallint,,,2,,,,,,様式6,"1=自ら、2=委託、3=併用、
+4=提供しない"
+46,,bath_fee,,,入浴等の介護（対価）,,,integer,,,4,,,,,,様式6,
+47,,housework_offer_type,,,調理等の家事（提供形態）,,,smallint,,,2,,,,,,様式6,"1=自ら、2=委託、3=併用、
+4=提供しない"
+48,,housework_fee,,,調理等の家事（対価）,,,integer,,,4,,,,,,様式6,
+49,,health_offer_type,,,健康の維持増進（提供形態）,,,smallint,,,2,,,,,,様式6,"1=自ら、2=委託、3=併用、
+4=提供しない"
+50,,health_fee,,,健康の維持増進（対価）,,,integer,,,4,,,,,,様式6,
+51,,other_offer_type,,,その他（提供形態）,,,smallint,,,2,,,,,,様式6,"1=自ら、2=委託、3=併用、
+4=提供しない"
+52,,other_fee,,,その他（対価）,,,integer,,,4,,,,,,様式6,
+53,,rent_min,,,家賃の概算額（最低）,,,integer,,,4,,,,,,様式6,
+54,,rent_max,,,家賃の概算額（最高）,,,integer,,,4,,,,,,様式6,
+55,,common_fee_min,,,共益費の概算額（最低）,,,integer,,,4,,,,,,様式6,
+56,,common_fee_max,,,共益費の概算額（最高）,,,integer,,,4,,,,,,様式6,
+57,,deposit_min,,,敷金の概算額（最低）,,,integer,,,4,,,,,,様式6,
+58,,deposit_max,,,敷金の概算額（最高）,,,integer,,,4,,,,,,様式6,
+59,,deposit_month,,,敷金の概算額（月数）,,,"numeric(5,1)",,,12,,,,,,様式6,
+60,,advance,,,前払金の有無,,,smallint,,,2,,,,,,様式6,0=なし、1=あり
+61,,advance_min,,,"家賃等の前払金の概算額
+（最低）",,,integer,,,4,,,,,,様式6,
+62,,advance_max,,,"家賃等の前払金の概算額
+（最高）",,,integer,,,4,,,,,,様式6,
+63,,advance_rent_calc,,,家賃等の前払金の算定の基礎（家賃）,,,character varying,,,200,,,,,,様式6,
+64,,advance_service_calc,,,家賃等の前払金の算定の基礎（サービス提供の対価）,,,character varying,,,200,,,,,,様式6,
+65,,advance_restore_calc,,,返還額の算定方法,,,character varying,,,200,,,,,,様式6,
+66,,advance_preserve_type,,,前払金の保全措置の内容,,,smallint,,,2,,,,,,様式6,"1=銀行による債務の保証
+2=信託会社等による元本補てん又は信託
+4=保険事業者による保証保険
+8=その他"
+67,,advance_preserve,,,"前払金の保全措置の内容
+（その他）",,,character varying,,,150,,,,,,様式6,
+68,,tokutei,,,特定施設入居者生活介護事業者,,,smallint,,,2,,,,,,様式6,"0=指定を受ける予定はない
+1=指定を受けている
+2=指定を受ける予定である
+3=指定を受けていない"
+69,,tokutei_regcode,,,特定施設入居者生活介護事業者（事業所の番号）,,,character varying,,,30,,,,,,様式6,
+70,,manage_type,,,管理の方式,,,smallint,,,2,,,,,,様式7,"1=自ら管理
+2=管理業務を委託"
+71,,manage_content,,,委託する業務の内容（契約事項）,,,character varying,,,200,,,,,,様式7,
+72,,manage_name_kana,,,委託先－名称（ふりがな）,,,character varying,,,200,,,,,,様式7,
+73,,manage_name,,,委託先－名称（漢字）,,,character varying,,,75,,,,,,様式7,
+74,,manage_zip,,,委託先－住所（郵便番号）,,,character varying,,,7,,,,,,様式7,
+75,,manage_pref,,,委託先－住所（都道府県）,,,smallint,,,2,,,,,,様式7,
+76,,manage_city,,,委託先－住所（市区町村）,,,character varying,,,50,,,,,,様式7,
+77,,manage_street,,,委託先－住所（所番地）,,,character varying,,,100,,,,,,様式7,
+78,,manage_tel,,,委託先－電話番号,,,character varying,,,20,,,,,,様式7,
+79,,repair_plan,,,修繕計画－計画策定の有無,,,smallint,,,2,,,,,,様式7,"0=なし
+1=あり"
+80,,repair_plan_large,,,修繕計画－大規模修繕の実施予定,,,character varying,,,50,,,,,,様式7,
+81,,repair_plan_other,,,修繕計画－その他計画的な修繕予定,,,character varying,,,50,,,,,,様式7,
+82,,policy_note,,,基本方針に照らして適切である旨,,,character varying,,,600,,,,,,様式10,
+83,,provider_url,,,ホームページアドレス,,,character varying,,,1024,,,,,,独自X1,
+84,,reg_date,,,登録日時,,,timestamp,,,8,,,,,CURRENT_TIME STAMP(0),,
+85,,upd_date,,,更新日時,,,timestamp,,,8,,,,,CURRENT_TIME STAMP(0),,
+86,,floor_num,,,階数,,,smallint,,,2,,,,,,様式4,
+87,,supply_date,,,入居開始時期,,,date,,,4,,,,,,様式5,
+88,,apply_date,,,申請日付,,,timestamp,,,8,,,,,,,
+89,,public_date,,,公開日付,,,date,,,4,,,,○,,,
+90,,before_apart_id,,,修正対象の物件ID,,,integer,,,4,,,,,,,
+91,,munic_memo,,,地方公共団体のメモ,,,character varying,,,500,,,,,,,
+92,,under_floor_num,,,地下階数,,,smallint,,,2,,,,,,様式4,
+93,,munic_reg_date,,,地方公共団体での登録日,,,date,,,4,,,,○,,,
+94,,admin_memo,,,事務局メモ,,,character varying,,,500,,,,,,,
+95,,contact_name,,,問合せ先１－名称,,,character varying,,,75,,,,,,独自X1,
+96,,contact_tel,,,問合せ先１－電話番号,,,character varying,,,20,,,,,,独自X1,
+97,,advance_payment,,,前払金の支払い方式,,,integer,,,4,,,,,,独自1,"1=前払方式のみ
+3=前払方式と月払方式を選択可"
+98,,advance_rent_min,,,前払金を支払った場合の 月々の家賃概算額（最低）,,,integer,,,4,,,,,,独自1,
+99,,advance_rent_max,,,前払金を支払った場合の 月々の家賃概算額（最高）,,,integer,,,4,,,,,,独自1,
+100,,grant_status,,,交付金－ステータス,,,integer,,,4,,,,,,,"1=申請or採択
+2=交付決定済"
+101,,grant_year,,,交付金－年,,,integer,,,4,,,,,,,
+102,,tenant_memo,,,入居資格などの制限入力備考欄,,,character varying,,,300,,,,,,独自5,
+103,,house_right_termless,,,住宅権原－期限なし,,,smallint,,,2,,,,,,,
+104,,facility_right_termless,,,施設権原－期間なし,,,smallint,,,2,,,,,,,
+105,,site_right_termless,,,敷地権原－期間なし,,,smallint,,,2,,,,,,,
+106,,consult_annex,,,状況把握／生活相談（併設）,,,smallint,,,2,,,,,,,
+107,,food_annex,,,食事の提供（併設）,,,smallint,,,2,,,,,,独自6,1=あり、0=なし
+108,,bath_annex,,,入浴等の介護（併設）,,,smallint,,,2,,,,,,独自6,
+109,,housework_annex,,,調理等の家事（併設）,,,smallint,,,2,,,,,,独自6,
+110,,health_annex,,,健康の維持増進（併設）,,,smallint,,,2,,,,,,独自6,
+111,,other_annex,,,その他（併設）,,,smallint,,,2,,,,,,独自6,
+112,,consult_partner,,,"状況把握／生活相談（提
+携）",,,smallint,,,2,,,,,,,
+113,,food_partner,,,食事の提供（提携）,,,smallint,,,2,,,,,,独自6,1=あり、0=なし
+114,,bath_partner,,,入浴等の介護（提携）,,,smallint,,,2,,,,,,独自6,
+115,,housework_partner,,,調理等の家事（提携）,,,smallint,,,2,,,,,,独自6,
+116,,health_partner,,,健康の維持増進（提携）,,,smallint,,,2,,,,,,独自6,
+117,,other_partner,,,その他（提携）,,,smallint,,,2,,,,,,独自6,
+118,,work_type,,,新築・改修の別,,,smallint,,,2,,,,,,,
+119,,repair_completion_date,,,改修工事の竣工の年月,,,date,,,4,,,,,,,
+120,,rent_etc_note,,,家賃・共益費・敷金に関する特記事項,,,character varying,,,300,,,,,,独自6,
+121,,format_ver,,,様式のバージョン,,,smallint,,,2,,,,,2,,"1=旧様式
+2=平成27年様式
+3=令和元年様式
+4=令和３年様式"
+122,,chiiki,,,地域密着型特定施設入居者生活介護事業所,,,smallint,,,2,,,,,,様式6,"1=指定を受けている
+3=指定を受けていない"
+123,,chiiki_regcode,,,地域密着型特定施設入居者生活介護事業所（介護保険事業所番号）,,,character varying,,,30,,,,,,様式6,
+124,,yobou,,,介護予防特定施設入居者生活介護事業所,,,smallint,,,2,,,,,,様式6,"1=指定を受けている
+3=指定を受けていない"
+125,,yobou_regcode,,,介護予防特定施設入居者生活介護事業所（介護保険事業所番号）,,,character varying,,,30,,,,,,様式6,
+126,,contact_name2,,,問合せ先２－名称,,,character varying,,,75,,,,,,独自X1,
+127,,contact_tel2,,,問合せ先２－電話番号,,,character varying,,,20,,,,,,独自X1,
+128,,apart_img1,,,住宅画像1 (外観),,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示可能な画面有り"
+129,,apart_img2,,,住宅画像2,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+130,,apart_img3,,,住宅画像3,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+131,,apart_img4,,,住宅画像4,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+132,,apart_img5,,,住宅画像5,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+133,,img_caption1,,,画像キャプション1,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+134,,img_caption2,,,画像キャプション2,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+135,,img_caption3,,,画像キャプション3,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+136,,img_caption4,,,画像キャプション4,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+137,,img_caption5,,,画像キャプション5,,,character varying,,,,,,,,,,"※2017年9月リリース時に入力画面削除
+運営情報への引継機能あり
+表示画面なし"
+138,,renew_date,,,5年更新の更新日,,,date,,,4,,,,,,,地公体が入力する更新日
+139,,renew_type,,,登録の区分,,,smallint,,,2,,,,,0,,"0=新規
+1=更新"
+140,,renew_old_code,,,従前の登録番号,,,character varying,,,20,,,,,,,
+141,,house_id,,,住宅番号,,,integer,,,4,,,,,,,
+142,,renew_num,,,更新回数,,,smallint,,,2,,,,,0,,
+143,,apply_code,,,共通申請ID,,,character varying,,,,,,,,,,"""[住宅番号]-[更新回数]"""
+144,,renew_pre_apply_code,,,更新前住宅 共通申請ID,,,character varying,,,,,,,,,,
+145,,renew_post_apply_code,,,更新後住宅 共通申請ID,,,character varying,,,,,,,,,,"更新後の共通申請ID
+更新前レコード用完了フラグ"
+146,,renew_done_date,,,システム更新確定日,,,timestamp,,,8,,,,,,,更新後のレコード側で保存
+147,,renovation_note,,,増改築等に関する備考,,,character varying,,,600,,,,,,"様式4
+（独",30年様式改修により追加
+148,,apart_note,,,全体に関する備考,,,character varying,,,600,,,,,,"様式10
+（独",30年様式改修により追加
+149,,yokaigo,,,要介護となった場合の介護サービスの利用,,,smallint,,,2,,,,,,様式6,"1=特定施設入居者生活介護を適用（介護付きホーム）介護予防・地域密着の場合を含む
+3=個別契約により居宅介護サービスを利用"
+150,,pledge_type1_srv,,,別紙6_誓約事項,,,smallint,,,2,,,,,0,様式6,"0:未誓約
+1:誓約済み"
+151,,receiving_flag,,,受付フラグ,,,smallint,,,2,,,,,0,,"0:未受付
+1:受付済"
+152,,pledge_type_srv_flg,,,別紙6_誓約事項_変更フラグ,,,smallint,,,2,,,,,0,,"0:変更無
+1:変更有"
