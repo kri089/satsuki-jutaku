@@ -1,0 +1,228 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'LAPP + Mail Stack on AL2027 with Advanced LVM2 Storage Layout'
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: 'vpc-0423945ee91175775'
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: 'subnet-0b4da10a5493ebaa0'
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2027-preview-ami-minimal-kernel-default-x86_64'
+  InstanceType:
+    Type: String
+    Default: 't3.micro'
+  RootVolumeSize:
+    Type: Number
+    Default: 20
+    Description: 'Root OS Disk Volume Size (GB)'
+  DataVolumeSize:
+    Type: Number
+    Default: 125
+    Description: 'LVM Data Disk Volume Size (GB)'
+  AcmCertificateArn:
+    Type: String
+    Default: 'arn:aws:acm:us-east-1:654654591579:certificate/57477fea-938f-43ee-86ae-aa0f57e1480f'
+    Description: 'MUST be in us-east-1 to use with CloudFront'
+  AppDomainName:
+    Type: String
+    Default: 'kosenchin.shpo.live-on.net'
+  DBName:
+    Type: String
+    Default: 'myappdb'
+  DBUser:
+    Type: String
+    Default: 'dbuser'
+  DBPassword:
+    Type: String
+    Default: 'SecurePassword123!'
+
+Resources:
+  # 1. セキュリティグループ
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Allow LAPP + Mail Ports'
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: '57.180.218.218/32' }
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: '114.156.144.247/32' }
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: '123.225.47.174/32' }
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: '208.127.164.191/32' }
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: '114.141.122.0/25' }
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: '217.178.6.180/32' }
+        - { IpProtocol: tcp, FromPort: 25, ToPort: 25, CidrIp: '0.0.0.0/0' }
+        - { IpProtocol: tcp, FromPort: 143, ToPort: 143, CidrIp: '0.0.0.0/0' }
+        - { IpProtocol: tcp, FromPort: 110, ToPort: 110, CidrIp: '0.0.0.0/0' }
+
+  # 2. IAMロール
+  SsmRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: [ec2.amazonaws.com] }
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+
+  SsmInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref SsmRole]
+
+  # 3. EC2インスタンス本体
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref SsmInstanceProfile
+      NetworkInterfaces:
+#       - AssociatePublicIpAddress: 'true'
+#         DeviceIndex: '0'
+        - DeviceIndex: '0'
+          GroupSet: [!Ref InstanceSecurityGroup]
+          SubnetId: !Ref SubnetId
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs: { VolumeSize: !Ref RootVolumeSize, VolumeType: gp3 }
+        - DeviceName: /dev/sdb
+          Ebs: { VolumeSize: !Ref DataVolumeSize, VolumeType: gp3 }
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s2>/dev/console) 2>&1
+
+          dnf install -y lvm2
+          TARGET_DEV=$(lsblk -dno NAME,SIZE | grep "${DataVolumeSize}G" | awk '{print "/dev/"$1}' | head -n 1)
+          if [ -z "$TARGET_DEV" ]; then TARGET_DEV="/dev/sdb"; fi
+
+          pvcreate $TARGET_DEV
+          vgcreate satsuki $TARGET_DEV
+
+          lvcreate -L 2G -n pgsql satsuki
+          lvcreate -L 16G -n mail satsuki
+          lvcreate -L 6G -n www satsuki
+          lvcreate -L 6G -n home satsuki
+          lvcreate -L 16G -n swap satsuki
+          lvcreate -L 16G -n opt satsuki
+          lvcreate -L 2G -n data satsuki
+
+          mkfs.xfs /dev/satsuki/pgsql
+          mkfs.xfs /dev/satsuki/mail
+          mkfs.xfs /dev/satsuki/www
+          mkfs.xfs /dev/satsuki/home
+          mkfs.xfs /dev/satsuki/opt
+          mkfs.xfs /dev/satsuki/data
+          mkswap /dev/satsuki/swap
+
+          mkdir -p /var/lib/pgsql /var/spool/mail /var/www /home /opt /mnt/data
+          
+          mount /dev/satsuki/pgsql /var/lib/pgsql
+          mount /dev/satsuki/mail /var/spool/mail
+          mount /dev/satsuki/www /var/www
+          mount /dev/satsuki/home /home
+          mount /dev/satsuki/opt /opt
+          mount /dev/satsuki/data /mnt/data
+          swapon /dev/satsuki/swap
+
+          echo "/dev/satsuki/pgsql /var/lib/pgsql xfs defaults 0 0" >> /etc/fstab
+          echo "/dev/satsuki/mail /var/spool/mail xfs defaults 0 0" >> /etc/fstab
+          echo "/dev/satsuki/www /var/www xfs defaults 0 0" >> /etc/fstab
+          echo "/dev/satsuki/home /home xfs defaults 0 0" >> /etc/fstab
+          echo "/dev/satsuki/opt /opt xfs defaults 0 0" >> /etc/fstab
+          echo "/dev/satsuki/data /mnt/data xfs defaults 0 0" >> /etc/fstab
+          echo "/dev/satsuki/swap swap swap defaults 0 0" >> /etc/fstab
+
+          dnf upgrade -y
+          dnf install -y httpd php php-pgsql php-bcmath php-gd php-zip php-intl postgresql16-server postgresql16 rsyslog amazon-cloudwatch-agent collectd mailx perl-base cyrus-sasl postfix dovecot firewalld nkf telnet || true
+          dnf install -y tripwire || echo "tripwire not found, skip."
+
+          postgresql-setup --initdb || true
+          systemctl enable postgresql && systemctl start postgresql || true
+          sudo -u postgres psql -c "CREATE USER ${DBUser} WITH PASSWORD '${DBPassword}';" || true
+          sudo -u postgres psql -c "CREATE DATABASE ${DBName} OWNER ${DBUser};" || true
+
+          setsebool -P httpd_can_network_connect_db on || true
+          echo "ServerTokens ProductOnly" >> /etc/httpd/conf/httpd.conf
+          echo "ServerSignature Off" >> /etc/httpd/conf/httpd.conf
+          
+          SED_CONF="/etc/php-fpm.d/www.conf"
+          if [ -f $SED_CONF ]; then
+            sed -i 's/pm = dynamic/pm = ondemand/g' $SED_CONF
+            sed -i 's/pm.max_children = 50/pm.max_children = 5/g' $SED_CONF
+          fi
+
+          systemctl enable rsyslog && systemctl start rsyslog
+          systemctl enable php-fpm && systemctl start php-fpm
+          systemctl enable httpd && systemctl start httpd
+          systemctl enable postfix && systemctl start postfix
+          systemctl enable dovecot && systemctl start dovecot
+          systemctl enable firewalld && systemctl start firewalld || true
+
+          echo "<?php phpinfo(); ?>" > /var/www/html/index.php
+
+  # 4. 固定IP (Elastic IP) の取得単体
+  InstanceEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  # 5. 固定IPとEC2インスタンスの明示的なアソシエーション（紐付けを分離）
+  EipAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt InstanceEip.AllocationId
+      InstanceId: !Ref Ec2Instance
+
+  # 6. CloudFront ディストリビューション
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+#   DependsOn: InstanceEip
+    Properties:
+      DistributionConfig:
+        Aliases: [!Ref AppDomainName]
+        Enabled: true
+        HttpVersion: http2and3
+        Origins:
+          - Id: EC2Origin
+#           DomainName: !GetAtt Ec2Instance.PublicDnsName
+#           DomainName: !GetAtt Ec2Instance.PublicIp
+#           DomainName: !Sub "ec2-${InstanceEip}.ap-northeast-1.compute.amazonaws.com"
+            DomainName: !Sub "ec2-${InstanceEip}.ap-northeast-1.compute.amazonaws.com"
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: EC2Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
+          CachedMethods: [GET, HEAD]
+          ForwardedValues:
+            QueryString: true
+            Cookies: { Forward: all }
+            Headers: [Host, Origin, Authorization]
+          MinTTL: 0
+          DefaultTTL: 0
+          MaxTTL: 0
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AcmCertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+
+Outputs:
+# EC2PublicIP:
+#   Value: !GetAtt Ec2Instance.PublicIp
+  EC2FixedPublicIP:
+    Description: 'Allocated Fixed Public IP'
+    Value: !Ref InstanceEip
+  CloudFrontDomainName:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+
